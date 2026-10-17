@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مولّد QCM</title>
+<style>
+:root{--ink:#14303a;--sub:#5a7078;--paper:#eef3f2;--card:#fff;--line:#c9d6d3;--acc:#0e6e7e;--acc-ink:#fff;--good:#1f7a5a;--good-bg:#dff1e9;--bad:#b3402f;--bad-bg:#f8e1dc;color-scheme:light}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e3eeee;--sub:#9fb4b8;--paper:#0f1d22;--card:#162a31;--line:#2c444c;--acc:#5cc3d3;--acc-ink:#07262c;--good:#6fd1a8;--good-bg:#173a2e;--bad:#f09a8a;--bad-bg:#3e2420;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Tajawal','Cairo','Noto Naskh Arabic',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;font-size:16px;min-height:100vh;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.wrap{max-width:600px;margin:0 auto;padding:18px 16px 48px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+h1{font-size:26px;margin:0;font-weight:800}
+header p{margin:0;color:var(--sub);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+[hidden]{display:none!important}
+.lbl{display:block;font-weight:700;font-size:14px;margin:0 0 6px}
+.hint{font-size:13px;color:var(--sub);margin:6px 0 0}
+input[type=text],input[type=password],input[type=url]{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px;background:var(--paper);color:var(--ink);font-size:15px;font-family:inherit;direction:ltr;text-align:left}
+input:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button{font-family:inherit;cursor:pointer}
+.btn{width:100%;border:0;border-radius:10px;background:var(--acc);color:var(--acc-ink);padding:13px;font-size:16px;font-weight:800;margin-top:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sec{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+.ghost{border:0;background:transparent;color:var(--sub);font-size:14px;padding:6px 8px;text-decoration:underline}
+.step{display:flex;align-items:center;gap:8px;font-weight:800;margin:0 0 10px}
+.step i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font-size:13px}
+.ok{color:var(--good);font-size:14px;margin:8px 0 0}
+.msg{font-size:14px;margin:10px 0 0;color:var(--sub)}
+.msg.err{background:var(--bad-bg);color:var(--bad);border-radius:10px;padding:10px 12px}
+.files{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px;max-height:320px;overflow:auto}
+.files label{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--paper);font-size:14.5px}
+.files input{margin-top:5px;accent-color:var(--acc)}
+.files label.off{opacity:.5}
+.files small{display:block;color:var(--sub);font-size:12px}
+.row{display:grid;gap:14px;margin:16px 0 0}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);padding:9px 6px;font-size:14px}
+.seg button+button{border-inline-start:1px solid var(--line)}
+.seg button.on{background:var(--acc);color:var(--acc-ink);font-weight:700}
+.center{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:32px 18px}
+.big{font-size:18px;font-weight:700;margin:0}
+.bar{width:100%;height:8px;background:var(--paper);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar.thin{height:5px;margin-bottom:16px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}.bar i{transition:none}}
+.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--sub);margin-bottom:8px}
+.q{font-size:18px;margin:0 0 4px;font-weight:700;line-height:1.6}
+.src{font-size:12px;color:var(--sub);margin:0 0 6px}
+.props{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+.prop{width:100%;display:flex;gap:12px;align-items:flex-start;text-align:start;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:11px 12px;font-size:15px}
+.prop b{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--sub);display:grid;place-items:center;font-size:13px;font-family:system-ui,sans-serif}
+.prop span{flex:1;padding-top:2px}
+.prop.picked{border-color:var(--acc)}
+.prop.picked b{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.prop.good{border-color:var(--good);background:var(--good-bg)}
+.prop.good b{background:var(--good);border-color:var(--good);color:var(--card)}
+.prop.bad{border-color:var(--bad);background:var(--bad-bg)}
+.prop.bad b{background:var(--bad);border-color:var(--bad);color:var(--card)}
+.prop.missed{border-style:dashed}
+.fb{margin-top:14px;border-radius:12px;padding:12px 14px;font-size:14.5px}
+.fb p{margin:4px 0 0}
+.fb.ok2{background:var(--good-bg);border-inline-start:4px solid var(--good)}
+.fb.ko{background:var(--bad-bg);border-inline-start:4px solid var(--bad)}
+.score{font-size:56px;font-weight:800;margin:0;line-height:1.1;direction:ltr}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0 10px}
+.dots i{width:14px;height:14px;border-radius:50%}
+.dots .g{background:var(--good)}
+.dots .r{background:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>مولّد QCM</h1>
+      <p>ألصق رابط درس أو مجلد مادة من درايفك، تحصل على أسئلة للتدرّب.</p>
+    </div>
+    <button class="ghost" id="gear" type="button">الإعدادات</button>
+  </header>
+
+  <section class="card" id="settings" hidden>
+    <p class="step">إعدادات Gemini</p>
+    <label class="lbl" for="gkey">مفتاح Gemini API</label>
+    <input type="password" id="gkey" autocomplete="off" placeholder="AIza...">
+    <p class="hint">يُحفظ في متصفحك أنت فقط ولا يُرسل لأي جهة سوى جوجل.</p>
+    <label class="lbl" for="gmodel" style="margin-top:12px">اسم النموذج</label>
+    <input type="text" id="gmodel" placeholder="gemini-flash-latest">
+    <p class="hint">اتركه كما هو. غيّره فقط إن ظهر خطأ يقول إن النموذج غير موجود.</p>
+    <button class="btn" id="saveset" type="button">حفظ</button>
+  </section>
+
+  <section id="s-input">
+    <div class="card">
+      <p class="step"><i>1</i> الدخول إلى الدرايف</p>
+      <button class="btn sec" id="signin" type="button" style="margin-top:0">تسجيل الدخول بجوجل</button>
+      <p class="ok" id="signed" hidden>تم الاتصال بالدرايف.</p>
+      <p class="hint">قد تظهر رسالة «جوجل لم تتحقق من هذا التطبيق»: اضغط Advanced ثم Go to qcm-site. هذا طبيعي لأنه تطبيقك الشخصي.</p>
+    </div>
+
+    <div class="card">
+      <p class="step"><i>2</i> رابط الدرس أو المجلد</p>
+      <label class="lbl" for="link" hidden>الرابط</label>
+      <input type="url" id="link" placeholder="https://drive.google.com/..." inputmode="url">
+      <button class="btn" id="read" type="button">اقرأ الرابط</button>
+      <p class="msg" id="m1" hidden></p>
+      <ul class="files" id="files" hidden></ul>
+    </div>
+
+    <div class="card" id="opts" hidden>
+      <p class="step"><i>3</i> الأسئلة</p>
+      <div class="row" style="margin-top:0">
+        <div>
+          <span class="lbl">عدد الأسئلة</span>
+          <div class="seg" id="segn"><button type="button" data-v="6">6</button><button type="button" data-v="10" class="on">10</button><button type="button" data-v="20">20</button></div>
+        </div>
+        <div>
+          <span class="lbl">لغة الأسئلة</span>
+          <div class="seg" id="segl"><button type="button" data-v="auto" class="on">نفس الدرس</button><button type="button" data-v="fr">Français</button><button type="button" data-v="ar">عربي</button></div>
+        </div>
+      </div>
+      <button class="btn" id="gen" type="button">أنشئ الأسئلة</button>
+      <p class="msg" id="m2" hidden></p>
+    </div>
+  </section>
+
+  <section class="card center" id="s-loading" hidden aria-live="polite">
+    <div class="spin" aria-hidden="true"></div>
+    <p class="big" id="ltxt">جارٍ العمل…</p>
+    <div class="bar"><i id="lbar"></i></div>
+    <p class="hint">قد يستغرق الأمر دقيقة أو أكثر حسب عدد الدروس.</p>
+  </section>
+
+  <section class="card" id="s-quiz" hidden></section>
+  <section class="card center" id="s-result" hidden></section>
+</div>
+
+<script>
+const CLIENT_ID = '557213207841-5hqds13gev2j0686b53todr3r2gk3jk4.apps.googleusercontent.com';
+const SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+const FOLDER = 'application/vnd.google-apps.folder';
+const GDOC = 'application/vnd.google-apps.document';
+const GSLIDES = 'application/vnd.google-apps.presentation';
+const $ = (id) => document.getElementById(id);
+const LS = {
+  get(k, d = '') { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+
+let token = null, tokenExp = 0, tokenClient = null, pending = null;
+let files = [], picked = new Set(), count = 10, lang = 'auto';
+let questions = [], idx = 0, sel = [], validated = false, results = [];
+const cache = {};
+
+/* ---------- small UI helpers ---------- */
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function show(name) {
+  for (const id of ['s-input', 's-loading', 's-quiz', 's-result']) $(id).hidden = id !== 's-' + name;
+}
+function say(id, text, isErr) {
+  const m = $(id);
+  m.hidden = !text;
+  m.textContent = text || '';
+  m.className = 'msg' + (isErr ? ' err' : '');
+}
+function setProg(text, done, total) {
+  $('ltxt').textContent = text;
+  $('lbar').style.width = (total ? (done / total) * 100 : 0) + '%';
+}
+
+/* ---------- settings ---------- */
+$('gkey').value = LS.get('gkey');
+$('gmodel').value = LS.get('gmodel', 'gemini-flash-latest');
+$('gear').onclick = () => { $('settings').hidden = !$('settings').hidden; };
+$('saveset').onclick = () => {
+  LS.set('gkey', $('gkey').value.trim());
+  LS.set('gmodel', $('gmodel').value.trim() || 'gemini-flash-latest');
+  $('settings').hidden = true;
+};
+if (!LS.get('gkey')) $('settings').hidden = false;
+$('link').value = LS.get('lastlink');
+
+for (const [id, set] of [['segn', (v) => (count = +v)], ['segl', (v) => (lang = v)]]) {
+  $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    set(b.dataset.v);
+    $(id).querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+  });
+}
+
+/* ---------- Google auth (token flow, runs fully in the browser) ---------- */
+function initAuth() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPE,
+    callback: (r) => {
+      if (r.error || !r.access_token) { pending && pending.rej(new Error('auth')); pending = null; return; }
+      token = r.access_token;
+      tokenExp = Date.now() + ((r.expires_in || 3600) - 60) * 1000;
+      $('signed').hidden = false;
+      pending && pending.res(token);
+      pending = null;
+    },
+    error_callback: () => { pending && pending.rej(new Error('popup')); pending = null; }
+  });
+}
+function ensureToken() {
+  if (token && Date.now() < tokenExp) return Promise.resolve(token);
+  return new Promise((res, rej) => {
+    if (!tokenClient) return rej(new Error('gsi'));
+    pending = { res, rej };
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+$('signin').onclick = () => ensureToken().catch((e) => say('m1', errText(e), true));
+(function loadGsi() {
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true;
+  s.onload = initAuth;
+  s.onerror = () => say('m1', 'تعذّر تحميل خدمة تسجيل الدخول من جوجل. تحقق من الإنترنت.', true);
+  document.head.append(s);
+})();
+
+function errText(e) {
+  const m = e.message || '';
+  if (m === 'popup' || m === 'auth') return 'لم يكتمل تسجيل الدخول. أعد المحاولة وتأكد أن النافذة المنبثقة غير محجوبة.';
+  if (m === 'gsi') return 'خدمة جوجل لم تُحمَّل بعد. انتظر ثانية وأعد المحاولة.';
+  if (e.status === 401) return 'انتهت جلسة الدرايف. اضغط تسجيل الدخول وأعد المحاولة.';
+  if (e.status === 403 || e.status === 404) return 'لا أستطيع فتح هذا الملف. تأكد أنه في حسابك أو مشارك معك، وأنك سجّلت الدخول بنفس الحساب الذي أضفته كمستخدم تجريبي.';
+  if (e.status === 429) return 'تجاوزت الحد المجاني مؤقتًا. انتظر قليلًا (أو حتى الغد) ثم أعد المحاولة.';
+  if (e.status === 400 && /API key/i.test(e.detail || '')) return 'مفتاح Gemini غير صحيح. افتح الإعدادات وألصقه من جديد.';
+  if (e.status === 400 && /model/i.test(e.detail || '')) return 'اسم النموذج غير مقبول. افتح الإعدادات وغيّره.';
+  if (e.status === 404 && e.gemini) return 'النموذج غير موجود. افتح الإعدادات وغيّر اسمه.';
+  if (e.status === 403 && e.gemini) return 'مفتاح Gemini مرفوض. أنشئ مفتاحًا جديدًا من AI Studio.';
+  if (m === 'toobig') return 'أحد الملفات كبير جدًا. جرّب ملفًا أصغر.';
+  if (m === 'empty') return 'لم أستطع إنشاء أسئلة. جرّب درسًا آخر أو أعد المحاولة.';
+  return 'حدث خطأ: ' + (m || 'غير معروف');
+}
+
+/* ---------- Drive ---------- */
+async function dfetch(path, mode = 'json') {
+  const t = await ensureToken();
+  const r = await fetch('https://www.googleapis.com/drive/v3/' + path, { headers: { Authorization: 'Bearer ' + t } });
+  if (!r.ok) { const e = new Error('drive' + r.status); e.status = r.status; throw e; }
+  return mode === 'json' ? r.json() : mode === 'blob' ? r.blob() : r.text();
+}
+const parseId = (l) => {
+  const m = l.match(/\/folders\/([\w-]+)/) || l.match(/\/d\/([\w-]+)/) || l.match(/[?&]id=([\w-]+)/);
+  return m && m[1];
+};
+const supported = (f) => [GDOC, GSLIDES, 'application/pdf'].includes(f.mimeType) || (f.mimeType || '').startsWith('text/');
+const kindLabel = (f) =>
+  f.mimeType === 'application/pdf' ? 'PDF' : f.mimeType === GDOC ? 'Google Docs' : f.mimeType === GSLIDES ? 'Google Slides' : (f.mimeType || '').startsWith('text/') ? 'نص' : 'غير مدعوم (حوّله إلى Docs أو PDF)';
+
+$('read').onclick = async () => {
+  say('m1', '');
+  const link = $('link').value.trim();
+  const id = parseId(link);
+  if (!id) return say('m1', 'الرابط غير مفهوم. انسخ رابط ملف أو مجلد من Google Drive.', true);
+  LS.set('lastlink', link);
+  say('m1', 'جارٍ القراءة…');
+  $('read').disabled = true;
+  try {
+    const meta = await dfetch(`files/${id}?fields=id,name,mimeType&supportsAllDrives=true`);
+    let skipped = 0;
+    if (meta.mimeType === FOLDER) {
+      const q = encodeURIComponent(`'${id}' in parents and trashed=false`);
+      const list = await dfetch(`files?q=${q}&fields=files(id,name,mimeType)&pageSize=200&orderBy=name&supportsAllDrives=true&includeItemsFromAllDrives=true`);
+      skipped = list.files.filter((f) => f.mimeType === FOLDER).length;
+      files = list.files.filter((f) => f.mimeType !== FOLDER);
+      picked = new Set();
+    } else {
+      files = [meta];
+      picked = new Set(supported(meta) ? [meta.id] : []);
+    }
+    if (!files.length) { say('m1', 'المجلد فارغ أو لا يحتوي ملفات مباشرة (المجلدات الفرعية لا تُقرأ).', true); }
+    else {
+      say('m1', meta.mimeType === FOLDER
+        ? `اختر الدروس التي تريد التدرّب عليها.${skipped ? ` (تم تجاهل ${skipped} مجلد فرعي)` : ''}`
+        : '');
+      renderFiles();
+    }
+  } catch (e) {
+    say('m1', errText(e), true);
+  } finally {
+    $('read').disabled = false;
+  }
+};
+
+function renderFiles() {
+  const ul = $('files');
+  ul.replaceChildren(...files.map((f) => {
+    const ok = supported(f);
+    const cb = el('input', { type: 'checkbox', disabled: !ok, checked: picked.has(f.id) && ok, onchange: () => {
+      cb.checked ? picked.add(f.id) : picked.delete(f.id);
+      $('gen').disabled = !picked.size;
+    } });
+    return el('li', {}, el('label', { class: ok ? '' : 'off' }, cb, el('span', {}, el('span', { dir: 'auto' }, f.name), el('small', {}, kindLabel(f)))));
+  }));
+  ul.hidden = false;
+  $('opts').hidden = false;
+  $('gen').disabled = !picked.size;
+}
+
+async function getContent(f) {
+  if (f.mimeType === 'application/pdf') {
+    const blob = await dfetch(`files/${f.id}?alt=media&supportsAllDrives=true`, 'blob');
+    if (blob.size > 18 * 1024 * 1024) throw new Error('toobig');
+    const b64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+    return { kind: 'pdf', data: b64 };
+  }
+  if (f.mimeType === GDOC || f.mimeType === GSLIDES) {
+    return { kind: 'text', data: await dfetch(`files/${f.id}/export?mimeType=text/plain`, 'text') };
+  }
+  return { kind: 'text', data: await dfetch(`files/${f.id}?alt=media&supportsAllDrives=true`, 'text') };
+}
+
+/* ---------- Gemini ---------- */
+const LANG_RULE = {
+  auto: 'Write the questions in the same language as the lesson.',
+  fr: 'Write the questions in French.',
+  ar: 'Write the questions in Arabic.',
+  en: 'Write the questions in English.'
+};
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function gemini(parts) {
+  const model = LS.get('gmodel', 'gemini-flash-latest') || 'gemini-flash-latest';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(LS.get('gkey'))}`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseMimeType: 'application/json', temperature: 0.7 } })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const e = new Error('gemini' + r.status);
+    e.status = r.status;
+    e.gemini = true;
+    e.detail = (data.error && data.error.message) || '';
+    throw e;
+  }
+  const text = (((data.candidates || [])[0] || {}).content || {}).parts;
+  if (!text) throw new Error('empty');
+  return text.map((p) => p.text || '').join('');
+}
+
+async function genChunk(doc, n, part, total, fileName) {
+  const prompt = `You are a medical-school exam writer. Using ONLY the attached lesson, write ${n} QCM questions.
+This is part ${part} of ${total}: split the lesson into ${total} equal consecutive portions and draw the questions from portion ${part} only, so parts never overlap.
+Rules: each question has exactly 5 propositions (A to E). One or more propositions can be correct (at least 1, at most 4). Vary how many are correct. Test understanding and key facts, not trivia. Keep every proposition under 18 words and every explanation under 35 words. ${LANG_RULE[lang]}
+Return ONLY JSON: {"questions":[{"q":"...","props":["...","...","...","...","..."],"correct":[0,2],"explain":"why the correct ones are true and the others false"}]} where correct holds zero-based indexes.`;
+  const parts = doc.kind === 'pdf'
+    ? [{ inline_data: { mime_type: 'application/pdf', data: doc.data } }]
+    : [{ text: 'LESSON:\n' + doc.data.slice(0, 200000) }];
+  parts.push({ text: prompt });
+
+  let lastErr;
+  for (let a = 0; a < 3; a++) {
+    try {
+      const raw = await gemini(parts);
+      const clean = raw.replace(/```json|```/g, '');
+      const obj = JSON.parse(clean.slice(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
+      return (obj.questions || [])
+        .filter((q) => q.q && Array.isArray(q.props) && q.props.length >= 2 && Array.isArray(q.correct) && q.correct.length &&
+          q.correct.every((i) => Number.isInteger(i) && i >= 0 && i < q.props.length))
+        .map((q) => ({ ...q, src: fileName }));
+    } catch (e) {
+      lastErr = e;
+      if (e.status === 400 || (e.status === 403 && e.gemini) || (e.status === 404 && e.gemini)) throw e;
+      await sleep(e.status === 429 ? 12000 * (a + 1) : 1500);
+    }
+  }
+  throw lastErr;
+}
+
+$('gen').onclick = async () => {
+  say('m2', '');
+  if (!LS.get('gkey')) { $('settings').hidden = false; return say('m2', 'أضف مفتاح Gemini في الإعدادات أولًا.', true); }
+  const chosen = files.filter((f) => picked.has(f.id));
+  if (!chosen.length) return say('m2', 'اختر درسًا واحدًا على الأقل.', true);
+  await generate(chosen);
+};
+
+async function generate(chosen) {
+  show('loading');
+  try {
+    setProg('جارٍ قراءة الدروس…', 0, 1);
+    for (const f of chosen) if (!cache[f.id]) cache[f.id] = await getContent(f);
+    const perFile = Math.ceil(count / chosen.length);
+    const tasks = [];
+    chosen.forEach((f) => {
+      const chunks = Math.ceil(perFile / 5);
+      for (let k = 0; k < chunks; k++) {
+        const n = Math.min(5, perFile - k * 5);
+        tasks.push(() => genChunk(cache[f.id], n, k + 1, chunks, f.name));
+      }
+    });
+    let done = 0, firstErr = null;
+    setProg(`جارٍ كتابة الأسئلة… 0 من ${tasks.length}`, 0, tasks.length);
+    const out = [];
+    let i = 0;
+    const worker = async () => {
+      while (i < tasks.length) {
+        const my = i++;
+        try { out[my] = await tasks[my](); } catch (e) { out[my] = null; firstErr = firstErr || e; }
+        done++;
+        setProg(`جارٍ كتابة الأسئلة… ${done} من ${tasks.length}`, done, tasks.length);
+      }
+    };
+    await Promise.all([worker(), worker()]);
+    const all = out.flat().filter(Boolean).slice(0, count);
+    if (!all.length) throw firstErr || new Error('empty');
+    questions = all; idx = 0; sel = []; validated = false; results = [];
+    renderQuiz();
+    show('quiz');
+  } catch (e) {
+    show('input');
+    say('m2', errText(e), true);
+  }
+}
+
+/* ---------- quiz ---------- */
+const L = 'ABCDE';
+const isRight = (q, s) => q.correct.length === s.length && q.correct.every((c) => s.includes(c));
+
+function renderQuiz() {
+  const q = questions[idx];
+  const score = results.filter(Boolean).length;
+  const box = $('s-quiz');
+  const list = el('ul', { class: 'props' }, q.props.map((p, i) => {
+    const on = sel.includes(i), should = q.correct.includes(i);
+    let c = 'prop';
+    if (on) c += ' picked';
+    if (validated && should) c += ' good';
+    if (validated && on && !should) c += ' bad';
+    if (validated && !on && should) c += ' missed';
+    return el('li', {}, el('button', { class: c, type: 'button', 'aria-pressed': on, onclick: () => {
+      if (validated) return;
+      sel = on ? sel.filter((x) => x !== i) : [...sel, i];
+      renderQuiz();
+    } }, el('b', { dir: 'ltr' }, L[i]), el('span', { dir: 'auto' }, p)));
+  }));
+
+  const kids = [
+    el('div', { class: 'meta' }, el('span', {}, `السؤال ${idx + 1} من ${questions.length}`), el('span', {}, `صحيح: ${score}`)),
+    el('div', { class: 'bar thin' }, el('i', { style: `width:${((idx + (validated ? 1 : 0)) / questions.length) * 100}%` })),
+    files.length > 1 || questions.some((x) => x.src !== q.src) ? el('p', { class: 'src', dir: 'auto' }, q.src) : null,
+    el('h2', { class: 'q', dir: 'auto' }, q.q),
+    el('p', { class: 'hint' }, 'قد تكون إجابة واحدة صحيحة أو أكثر.'),
+    list
+  ];
+  if (validated) {
+    const good = results[results.length - 1];
+    kids.push(el('div', { class: 'fb ' + (good ? 'ok2' : 'ko'), role: 'status' },
+      el('strong', {}, good ? 'إجابة صحيحة' : 'إجابة غير صحيحة'),
+      el('p', { dir: 'auto' }, 'الصحيح: ' + q.correct.map((c) => L[c]).join(', ') + '. ' + (q.explain || ''))));
+    kids.push(el('button', { class: 'btn', type: 'button', onclick: next }, idx + 1 >= questions.length ? 'عرض النتيجة' : 'السؤال التالي'));
+  } else {
+    kids.push(el('button', { class: 'btn', type: 'button', disabled: !sel.length, onclick: () => {
+      validated = true;
+      results.push(isRight(q, sel));
+      renderQuiz();
+    } }, 'تحقّق'));
+  }
+  box.replaceChildren(...kids.filter(Boolean));
+}
+
+function next() {
+  if (idx + 1 >= questions.length) return renderResult();
+  idx++; sel = []; validated = false;
+  renderQuiz();
+  window.scrollTo(0, 0);
+}
+
+function renderResult() {
+  const score = results.filter(Boolean).length, r = score / questions.length;
+  $('s-result').replaceChildren(
+    el('p', { class: 'score' }, `${score}/${questions.length}`),
+    el('p', { class: 'big' }, r >= 0.8 ? 'ممتاز، المادة متمكّنة' : r >= 0.5 ? 'جيد، راجع الأسئلة الخاطئة' : 'تحتاج مراجعة أخرى للدرس'),
+    el('div', { class: 'dots', 'aria-hidden': 'true' }, results.map((x) => el('i', { class: x ? 'g' : 'r' }))),
+    el('button', { class: 'btn', type: 'button', onclick: () => generate(files.filter((f) => picked.has(f.id))) }, 'أسئلة جديدة من نفس الدروس'),
+    el('button', { class: 'ghost', type: 'button', onclick: () => { show('input'); window.scrollTo(0, 0); } }, 'اختيار درس آخر')
+  );
+  show('result');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
